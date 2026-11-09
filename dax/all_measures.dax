@@ -1,0 +1,95 @@
+================================================================================
+POWER BI DAX MEASURES & PARAMETER DOCUMENTATION
+Project: US Commercial Payer Market Access & Patient Burden Analysis
+================================================================================
+
+1. PARAMETER TABLE: Copay Card Subsidy Schedule ($0–$500)
+Purpose: What-If parameter series generating $25 monthly discount increments for commercial affordability modeling.
+DAX:
+Copay Card Discount = GENERATESERIES(0, 500, 25)
+
+--------------------------------------------------------------------------------
+
+2. MEASURE: Selected Monthly Copay Subsidy ($)
+Purpose: Captures the active slider value selected by the user to drive real-time net cost and affordability simulations.
+DAX:
+Copay Card Discount Value = SELECTEDVALUE('Copay Card Discount'[Copay Card Discount])
+
+--------------------------------------------------------------------------------
+
+3. MEASURE: Gross Patient Out-of-Pocket Cost
+Visual Card Label: Gross Monthly OOP
+Purpose: Baseline monthly patient cost-sharing burden prior to any manufacturer copay card subsidy.
+DAX:
+Avg Patient OOP = AVERAGE(iqvia_market_access[est_patient_cost])
+
+--------------------------------------------------------------------------------
+
+4. MEASURE: Net Patient OOP (Post-Copay Support)
+Visual Card Label: Net Patient OOP
+Purpose: Effective monthly out-of-pocket cost paid by the patient after applying the simulated manufacturer copay card discount.
+DAX:
+Net Patient Cost = 
+AVERAGEX(
+    iqvia_market_access,
+    MAX(0, iqvia_market_access[est_patient_cost] - 'Copay Card Discount'[Copay Card Discount Value])
+)
+
+--------------------------------------------------------------------------------
+
+5. MEASURE: Coinsurance Exposure Rate (% High Barrier)
+Visual Card Label: High-Barrier Plans (Coinsurance)
+Purpose: Share of plans utilizing percentage-based coinsurance rather than predictable flat copays, creating high financial friction.
+DAX:
+% High Barrier Plans = 
+DIVIDE(
+    CALCULATE(COUNTROWS(iqvia_market_access), iqvia_market_access[access_tier] = "High Barrier (Coinsurance)"),
+    COUNTROWS(iqvia_market_access),
+    0
+)
+
+--------------------------------------------------------------------------------
+
+6. MEASURE: Affordable Coverage Rate (<= $50 OOP)
+Visual Card Label: Affordable Plans (<=$50)
+Purpose: Share of commercial plans where net patient out-of-pocket exposure falls at or below the $50 abandonment threshold after copay assistance.
+DAX:
+% Affordable Plans = 
+VAR Discount = 'Copay Card Discount'[Copay Card Discount Value]
+RETURN
+DIVIDE(
+    CALCULATE(
+        COUNTROWS(iqvia_market_access),
+        FILTER(iqvia_market_access, (iqvia_market_access[est_patient_cost] - Discount) <= 50)
+    ),
+    COUNTROWS(iqvia_market_access),
+    0
+)
+
+--------------------------------------------------------------------------------
+
+7. MEASURE: Copay Assistance Affordability Sensitivity
+Visual Chart Title: Copay Card Sensitivity: % Affordable Plans by Discount Level
+Purpose: Dynamic elasticity curve modeling how affordable plan coverage scales across $0–$500/month copay card subsidy levels.
+DAX:
+Simulated Affordability Curve = 
+VAR DiscountLevel = SELECTEDVALUE('Copay Card Discount'[Copay Card Discount])
+RETURN
+DIVIDE(
+    CALCULATE(
+        COUNTROWS(iqvia_market_access),
+        FILTER(iqvia_market_access, (iqvia_market_access[est_patient_cost] - DiscountLevel) <= 50)
+    ),
+    COUNTROWS(iqvia_market_access),
+    0
+)
+
+--------------------------------------------------------------------------------
+
+8. MEASURE: Dynamic Report Header
+Purpose: Context-aware banner title that updates automatically based on the active therapeutic tier selection.
+DAX:
+Dynamic Title = 
+"Market Access & Patient Burden: " & SELECTEDVALUE('iqvia_market_access'[Drug Tier], "All Therapeutic Tiers")
+
+================================================================================
