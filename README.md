@@ -35,17 +35,7 @@ Health Insurance Marketplace/
 │   ├── Dashboard_Overview.png       # Full baseline Power BI executive dashboard view
 │   └── Drilldown.png                # Filtered view demonstrating $100 copay card simulation
 │
-├── data/
-│   ├── database.sqlite              # Raw CMS Health Insurance Marketplace SQLite database (~3.9 GB)
-│   ├── PlanAttributes.xlsx          # Plan metadata (StateCode, MetalLevel, PlanType)
-│   ├── BenefitsCostSharing.xlsx     # Formulary copay and coinsurance structures by drug tier
-│   ├── Rate.xlsx                    # Monthly premium rates by plan and age cohort
-│   ├── BusinessRules.xlsx           # Plan-level underwriting and business rules
-│   ├── Crosswalk2015.xlsx           # Plan ID crosswalk reference (2015)
-│   ├── Crosswalk2016.xlsx           # Plan ID crosswalk reference (2016)
-│   ├── Network.xlsx                 # Provider network identifiers
-│   ├── ServiceArea.xlsx             # Geographic service area coverage mappings
-│   ├── sql_export.csv               # Cleaned relational view exported from SQL Server (SSMS)
+├── data/  
 │   └── iqvia_market_access.xlsx     # Final Python-enriched dataset powering Power BI
 │
 ├── dax/
